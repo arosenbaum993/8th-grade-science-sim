@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade 8 Science EOG Practice Simulation</title>
+<style>
+  :root {
+    --matter: #1B4F72; --matter-light: #D6EAF8;
+    --waves: #145A32; --waves-light: #D5F5E3;
+    --energy: #7D6608; --energy-light: #FEF9E7;
+    --motion: #6E2F8A; --motion-light: #F4ECF7;
+    --force: #922B21; --force-light: #FDEDEC;
+    --primary: #1a3a5c; --accent: #2E86C1;
+    --gold: #F1C40F; --success: #27AE60; --danger: #C0392B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #1a1a2e; min-height: 100vh; }
+
+  /* ── GATE SCREEN ── */
+  #gate { display:flex; align-items:center; justify-content:center; min-height:100vh; background: linear-gradient(135deg, #1a3a5c 0%, #2E86C1 100%); }
+  .gate-card { background:#fff; border-radius:16px; padding:48px 40px; max-width:480px; width:90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .gate-logo { text-align:center; margin-bottom:24px; }
+  .gate-logo h1 { font-size:1.6rem; color:var(--primary); font-weight:800; }
+  .gate-logo p { color:#666; margin-top:6px; font-size:.95rem; }
+  .gate-badge { display:inline-block; background:var(--accent); color:#fff; font-size:.75rem; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:16px; letter-spacing:.5px; }
+  .gate-field { margin-bottom:20px; }
+  .gate-field label { display:block; font-weight:700; color:var(--primary); margin-bottom:6px; font-size:.9rem; }
+  .gate-field input { width:100%; padding:12px 16px; border:2px solid #ddd; border-radius:8px; font-size:1rem; transition:border-color .2s; }
+  .gate-field input:focus { outline:none; border-color:var(--accent); }
+  .gate-info { background:#f0f4f8; border-radius:8px; padding:14px 16px; margin-bottom:24px; font-size:.85rem; color:#555; }
+  .gate-info strong { color:var(--primary); }
+  .btn-start { width:100%; padding:15px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:1.1rem; font-weight:800; cursor:pointer; transition:background .2s; }
+  .btn-start:hover { background:#1a6fa8; }
+
+  /* ── TEST LAYOUT ── */
+  #test-screen { display:none; }
+  .test-header { background:var(--primary); color:#fff; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  .test-header .student-info { font-size:.85rem; opacity:.85; }
+  .test-header .student-info strong { font-size:1rem; opacity:1; }
+  #timer { font-size:1.4rem; font-weight:800; background:rgba(255,255,255,.15); padding:6px 18px; border-radius:8px; transition:background .5s, color .5s; }
+  #timer.warning { background:#F39C12; color:#fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+  .test-body { display:flex; gap:0; max-width:1200px; margin:0 auto; padding:20px; }
+
+  /* ── QUESTION PALETTE ── */
+  .palette { width:220px; flex-shrink:0; }
+  .palette-card { background:#fff; border-radius:12px; padding:16px; position:sticky; top:75px; box-shadow:0 2px 12px rgba(0,0,0,.1); }
+  .palette-card h3 { font-size:.85rem; font-weight:800; color:var(--primary); margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px; }
+  .palette-legend { font-size:.75rem; color:#666; margin-bottom:10px; display:flex; flex-direction:column; gap:5px; }
+  .legend-item { display:flex; align-items:center; gap:6px; }
+  .legend-dot { width:14px; height:14px; border-radius:3px; flex-shrink:0; }
+  .palette-grid { display:grid; grid-template-columns: repeat(5,1fr); gap:5px; }
+  .q-btn { width:32px; height:32px; border:none; border-radius:5px; font-size:.8rem; font-weight:700; cursor:pointer; transition:all .15s; }
+  .q-btn.unanswered { background:#e8ecf0; color:#555; }
+  .q-btn.answered { background:var(--success); color:#fff; }
+  .q-btn.flagged { background:var(--gold); color:#333; }
+  .q-btn.current { outline:3px solid var(--primary); outline-offset:1px; }
+
+  /* ── QUESTION AREA ── */
+  .question-area { flex:1; min-width:0; }
+  .question-card { background:#fff; border-radius:12px; padding:28px; margin-bottom:20px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+  .q-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px; }
+  .q-number { font-weight:800; color:var(--primary); font-size:1rem; }
+  .q-badges { display:flex; gap:8px; align-items:center; }
+  .badge { font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:12px; text-transform:uppercase; letter-spacing:.4px; }
+  .badge-domain { color:#fff; }
+  .badge-dok { background:#e8ecf0; color:#555; }
+  .q-type-label { font-size:.8rem; font-style:italic; color:#777; margin-bottom:12px; }
+  .q-stem { font-size:1.02rem; line-height:1.65; color:#1a1a2e; margin-bottom:20px; }
+  .q-stem .data-table { width:100%; border-collapse:collapse; margin:12px 0; font-size:.92rem; }
+  .q-stem .data-table th { background:#1a3a5c; color:#fff; padding:8px 12px; text-align:left; }
+  .q-stem .data-table td { padding:7px 12px; border:1px solid #ddd; }
+  .q-stem .data-table tr:nth-child(even) td { background:#f5f7fa; }
+
+  /* Selected Response */
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { display:flex; align-items:flex-start; gap:12px; padding:12px 16px; border:2px solid #e0e0e0; border-radius:8px; cursor:pointer; transition:all .15s; }
+  .option:hover { border-color:var(--accent); background:#f0f7ff; }
+  .option.selected { border-color:var(--accent); background:#e8f4fd; }
+  .option input[type="radio"], .option input[type="checkbox"] { margin-top:2px; accent-color:var(--accent); width:16px; height:16px; flex-shrink:0; }
+  .option-text { font-size:.97rem; line-height:1.5; }
+
+  /* Drag and Drop */
+  .dnd-container { display:flex; gap:20px; flex-wrap:wrap; }
+  .dnd-source { flex:1; min-width:200px; }
+  .dnd-target { flex:1; min-width:200px; }
+  .dnd-source h4, .dnd-target h4 { font-size:.85rem; font-weight:700; color:var(--primary); margin-bottom:10px; text-transform:uppercase; letter-spacing:.4px; }
+  .drag-items { min-height:50px; display:flex; flex-direction:column; gap:6px; }
+  .drag-item { background:#fff; border:2px solid #c0cfe0; border-radius:7px; padding:9px 14px; font-size:.9rem; cursor:grab; user-select:none; transition:all .15s; display:flex; justify-content:space-between; align-items:center; }
+  .drag-item:hover { border-color:var(--accent); background:#f0f7ff; }
+  .drag-item.dragging { opacity:.5; border-style:dashed; }
+  .drop-zone { min-height:60px; border:2px dashed #aaa; border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px; transition:border-color .15s, background .15s; }
+  .drop-zone.drag-over { border-color:var(--accent); background:#e8f4fd; }
+  .drop-zone-label { font-size:.78rem; color:#999; text-align:center; padding:8px; }
+  .drag-restore { font-size:.65rem; color:#999; cursor:pointer; }
+  .drag-restore:hover { color:var(--danger); }
+
+  /* Q Actions */
+  .q-actions { display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-top:16px; border-top:1px solid #eee; }
+  .btn-flag { background:none; border:2px solid var(--gold); color:#c19400; padding:8px 16px; border-radius:7px; font-size:.85rem; font-weight:700; cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:6px; }
+  .btn-flag:hover, .btn-flag.flagged { background:var(--gold); color:#333; }
+  .btn-flag .flag-icon { font-size:1rem; }
+  .btn-nav { display:flex; gap:10px; }
+  .btn { padding:10px 22px; border:none; border-radius:7px; font-size:.9rem; font-weight:700; cursor:pointer; transition:all .15s; }
+  .btn-secondary { background:#e8ecf0; color:#333; }
+  .btn-secondary:hover { background:#d0d8e0; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:#1a6fa8; }
+  .btn-submit { background:var(--success); color:#fff; }
+  .btn-submit:hover { background:#1e8449; }
+
+  /* ── RESULTS SCREEN ── */
+  #results-screen { display:none; padding:30px 20px; max-width:900px; margin:0 auto; }
+  .results-header { text-align:center; margin-bottom:30px; }
+  .results-header h1 { font-size:1.8rem; color:var(--primary); font-weight:800; }
+  .results-header p { color:#666; margin-top:6px; }
+  .achievement-badge { display:inline-block; padding:14px 32px; border-radius:12px; font-size:1.3rem; font-weight:800; margin:16px 0; text-transform:uppercase; letter-spacing:1px; }
+  .badge-beginning { background:#FDEDEC; color:#922B21; border:2px solid #922B21; }
+  .badge-developing { background:#FEF9E7; color:#7D6608; border:2px solid #7D6608; }
+  .badge-proficient { background:#D5F5E3; color:#145A32; border:2px solid #145A32; }
+  .badge-distinguished { background:#D6EAF8; color:#1B4F72; border:2px solid #1B4F72; }
+  .score-summary { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:28px; }
+  .score-box { background:#fff; border-radius:10px; padding:18px 24px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.1); min-width:130px; }
+  .score-box .score-num { font-size:2rem; font-weight:800; color:var(--primary); }
+  .score-box .score-label { font-size:.78rem; color:#888; text-transform:uppercase; letter-spacing:.4px; margin-top:4px; }
+
+  /* Domain bar chart */
+  .domain-chart { background:#fff; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+  .domain-chart h2 { font-size:1.1rem; font-weight:800; color:var(--primary); margin-bottom:18px; }
+  .domain-row { margin-bottom:14px; }
+  .domain-label { display:flex; justify-content:space-between; font-size:.88rem; font-weight:600; margin-bottom:5px; }
+  .domain-bar-bg { height:20px; background:#e8ecf0; border-radius:10px; overflow:hidden; }
+  .domain-bar-fill { height:100%; border-radius:10px; transition: width 1s ease; }
+
+  /* Answer review */
+  .answer-review { background:#fff; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+  .answer-review h2 { font-size:1.1rem; font-weight:800; color:var(--primary); margin-bottom:6px; }
+  .answer-review p.note { font-size:.82rem; color:#888; margin-bottom:16px; font-style:italic; }
+  .answer-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:8px; }
+  .answer-item { width:44px; height:44px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:.9rem; border:2px solid transparent; }
+  .answer-item.correct { background:var(--success); color:#fff; }
+  .answer-item.incorrect { background:var(--danger); color:#fff; }
+  .answer-item.flagged-vocab { outline:3px solid var(--gold); outline-offset:2px; }
+
+  /* Vocab flags */
+  .vocab-flags { background:#fff; border-radius:12px; padding:24px; margin-bottom:24px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+  .vocab-flags h2 { font-size:1.1rem; font-weight:800; color:var(--primary); margin-bottom:14px; }
+  .flag-list { display:flex; flex-wrap:wrap; gap:10px; }
+  .flag-tag { background:#FEF9E7; border:1.5px solid var(--gold); color:#7D6608; padding:6px 14px; border-radius:20px; font-size:.82rem; font-weight:700; }
+  .no-flags { color:#888; font-style:italic; font-size:.9rem; }
+
+  /* Submission status */
+  .submit-status { text-align:center; padding:16px; border-radius:10px; margin-top:16px; font-weight:700; font-size:.9rem; }
+  .submit-status.sending { background:#E8F4FD; color:var(--accent); }
+  .submit-status.success { background:#D5F5E3; color:#145A32; }
+  .submit-status.error { background:#FDEDEC; color:#922B21; }
+
+  /* Responsive */
+  @media(max-width:768px) {
+    .test-body { flex-direction:column; }
+    .palette { width:100%; }
+    .palette-card { position:relative; top:0; }
+    .dnd-container { flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ GATE SCREEN -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <span class="gate-badge">Georgia Milestones EOG Practice</span>
+      <h1>Grade 8 Science</h1>
+      <p>Practice Simulation &mdash; 30 Items &bull; 50 Minutes</p>
+    </div>
+    <div class="gate-info">
+      <strong>Before you begin:</strong> This simulation mirrors the Georgia Milestones EOG format.
+      You will see selected-response, multi-select, and drag-and-drop items.
+      A 50-minute timer will count down. Use the <strong>Vocabulary Flag</strong> button to mark any item
+      where a vocabulary word was a barrier. Your results will be submitted automatically when you finish.
+    </div>
+    <div class="gate-field">
+      <label for="studentName">Student Name (First Last)</label>
+      <input type="text" id="studentName" placeholder="e.g., Marcus Williams" autocomplete="name">
+    </div>
+    <div class="gate-field">
+      <label for="studentPeriod">Class Period</label>
+      <input type="text" id="studentPeriod" placeholder="e.g., 3rd Period">
+    </div>
+    <button class="btn-start" onclick="startTest()">Begin Simulation &rarr;</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ TEST SCREEN -->
+<div id="test-screen">
+  <div class="test-header">
+    <div class="student-info">
+      <strong id="headerName">Student</strong><br>
+      <span id="headerPeriod">Period</span>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:.7rem;opacity:.7;letter-spacing:.5px;text-transform:uppercase;">Grade 8 Science EOG Simulation</div>
+      <div style="font-size:.85rem;margin-top:2px;">Question <span id="currentQNum">1</span> of 30</div>
+    </div>
+    <div id="timer">50:00</div>
+  </div>
+
+  <div class="test-body">
+    <!-- Palette -->
+    <div class="palette">
+      <div class="palette-card">
+        <h3>Question Navigator</h3>
+        <div class="palette-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#e8ecf0;"></div> Unanswered</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Answered</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--gold);"></div> Vocab Flagged</div>
+        </div>
+        <div class="palette-grid" id="paletteGrid"></div>
+      </div>
+    </div>
+
+    <!-- Question Area -->
+    <div class="question-area" id="questionArea"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ RESULTS SCREEN -->
+<div id="results-screen">
+  <div class="results-header">
+    <h1>&#127891; Simulation Complete</h1>
+    <p id="resultsStudentName"></p>
+  </div>
+  <div style="text-align:center;">
+    <div id="achievementBadge" class="achievement-badge"></div>
+  </div>
+  <div class="score-summary" id="scoreSummary"></div>
+  <div class="domain-chart" id="domainChart">
+    <h2>&#128200; Domain Performance</h2>
+    <div id="domainBars"></div>
+  </div>
+  <div class="answer-review" id="answerReview">
+    <h2>&#10003; Answer Review</h2>
+    <p class="note">Green = Correct &bull; Red = Incorrect &bull; Gold outline = Vocabulary Flagged &bull; Correct answers are not displayed.</p>
+    <div class="answer-grid" id="answerGrid"></div>
+  </div>
+  <div class="vocab-flags" id="vocabFlagsSection">
+    <h2>&#127988; Vocabulary Flags</h2>
+    <div class="flag-list" id="flagList"></div>
+  </div>
+  <div id="submitStatus" class="submit-status sending">Submitting your results...</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════ CONFIGURATION
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWvVt_PsQdyjDGDzx4NgVTipcFWeO1XVtj7H-JBBxkurdL1rh5lfpWAmvGWKtINyo0/exec";
+
+// Achievement level cut scores (based on Georgia Milestones ALD descriptors)
+// Mapped to 30-item simulation: Beginning <40%, Developing 40-59%, Proficient 60-79%, Distinguished >=80%
+const ALD = {
+  distinguished: 80,
+  proficient: 60,
+  developing: 40
+};
+
+// ═══════════════════════════════════════════════════════════ QUESTIONS
+// Domain distribution: Matter 28%→8q, Waves 24%→7q, Energy 18%→5q, Motion 15%→5q, Force 15%→5q = 30
+// DOK: DOK1=4(13%), DOK2=18(60%), DOK3=8(27%) — within blueprint range
+const questions = [
+  // ─── MATTER (Q1–Q8) ───────────────────────────────────────────────
+  {
+    id:1, domain:"Matter", standard:"S8P1a", dok:1, type:"sr",
+    stem:"Which of the following BEST describes a pure substance?",
+    options:["A. A sample that contains two different types of particles mixed unevenly",
+             "B. A sample in which all particles are identical and cannot be separated by physical means",
+             "C. A liquid that can be filtered to separate its components",
+             "D. A solid mixture of two elements combined in fixed proportions"],
+    correct:[1]
+  },
+  {
+    id:2, domain:"Matter", standard:"S8P1a", dok:2, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>A student examines four particle diagrams. Which diagrams represent a <em>mixture</em>? Select ALL that apply.<br><br><em>Diagram A:</em> All particles are identical spheres arranged in a grid.<br><em>Diagram B:</em> Two different types of particles are spread evenly throughout the sample.<br><em>Diagram C:</em> Three different types of particles are scattered randomly with no pattern.<br><em>Diagram D:</em> All particles are pairs of identical atoms bonded together.",
+    options:["A. Diagram A", "B. Diagram B", "C. Diagram C", "D. Diagram D"],
+    correct:[1,2]
+  },
+  {
+    id:3, domain:"Matter", standard:"S8P1b", dok:2, type:"sr",
+    stem:"A substance is cooled from a liquid to a solid. Which statement BEST describes what happens to the particles during this phase change?",
+    options:["A. The particles gain energy and move farther apart",
+             "B. The particles lose energy and slow down, moving into a more ordered arrangement",
+             "C. The particles move faster and collide more frequently",
+             "D. The particles disappear and new particles form"],
+    correct:[1]
+  },
+  {
+    id:4, domain:"Matter", standard:"S8P1c", dok:2, type:"dnd",
+    stem:"Drag each observation to the correct category — <strong>Physical Change</strong> or <strong>Chemical Change</strong>.",
+    items:["Iron rusting in rain", "Ice melting on a sidewalk", "Wood burning in a campfire", "Aluminum foil being crushed"],
+    targets:["Physical Change","Chemical Change"],
+    correctMap:{"Iron rusting in rain":"Chemical Change","Ice melting on a sidewalk":"Physical Change","Wood burning in a campfire":"Chemical Change","Aluminum foil being crushed":"Physical Change"}
+  },
+  {
+    id:5, domain:"Matter", standard:"S8P1d", dok:2, type:"sr",
+    stem:"A student observes that a substance has a melting point of 1,538°C, is shiny, and conducts electricity. These observations describe the substance's —",
+    options:["A. chemical properties only",
+             "B. physical properties only",
+             "C. both chemical and physical properties",
+             "D. chemical changes that occurred"],
+    correct:[1]
+  },
+  {
+    id:6, domain:"Matter", standard:"S8P1e", dok:2, type:"sr",
+    stem:"A student uses a periodic table to analyze patterns in atomic structure. Moving left to right across Period 3, which pattern does the student observe?",
+    options:["A. The atomic number decreases and the number of protons increases",
+             "B. The atomic number increases and each element has one more proton than the previous element",
+             "C. The number of neutrons increases while the number of protons stays the same",
+             "D. Each element has one more electron shell than the element before it"],
+    correct:[1]
+  },
+  {
+    id:7, domain:"Matter", standard:"S8P1f", dok:2, type:"sr",
+    stem:"A student performs a reaction in a sealed container. Before the reaction, the total mass is 45 grams. After the reaction, which result is MOST consistent with the law of conservation of matter?",
+    options:["A. The total mass is 42 grams because gases were produced",
+             "B. The total mass is 45 grams because atoms are rearranged, not created or destroyed",
+             "C. The total mass is 50 grams because the reaction added energy to the system",
+             "D. The total mass cannot be determined without knowing the type of reaction"],
+    correct:[1]
+  },
+  {
+    id:8, domain:"Matter", standard:"S8P1f", dok:3, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>A teacher demonstrates a chemical reaction by mixing baking soda and vinegar in an open container. The mass of the reactants is 50 g, but after the reaction, the mass of the products remaining in the container is only 47 g.<br><br>Which statements CORRECTLY explain this result? Select ALL that apply.",
+    options:["A. Matter was destroyed during the chemical reaction",
+             "B. Carbon dioxide gas escaped into the atmosphere, removing mass from the container",
+             "C. The total mass of all products — including the escaped gas — is still 50 g",
+             "D. If the reaction had been done in a sealed container, the mass would remain 50 g"],
+    correct:[1,2,3]
+  },
+
+  // ─── WAVES (Q9–Q15) ───────────────────────────────────────────────
+  {
+    id:9, domain:"Waves", standard:"S8P4a", dok:1, type:"sr",
+    stem:"Which statement describes a key difference between electromagnetic waves and mechanical waves?",
+    options:["A. Electromagnetic waves require a medium to travel; mechanical waves do not",
+             "B. Mechanical waves require a medium to travel; electromagnetic waves do not",
+             "C. Both electromagnetic and mechanical waves travel at the same speed in all materials",
+             "D. Neither electromagnetic nor mechanical waves can be reflected"],
+    correct:[1]
+  },
+  {
+    id:10, domain:"Waves", standard:"S8P4b", dok:2, type:"sr",
+    stem:"A student examines the electromagnetic spectrum. Which list correctly orders wave types from <em>lowest energy</em> to <em>highest energy</em>?",
+    options:["A. Radio waves → Microwaves → Infrared → Visible light → Ultraviolet → X-rays → Gamma rays",
+             "B. Gamma rays → X-rays → Ultraviolet → Visible light → Infrared → Microwaves → Radio waves",
+             "C. Visible light → Infrared → X-rays → Radio waves → Ultraviolet → Microwaves → Gamma rays",
+             "D. Infrared → Radio waves → Microwaves → Gamma rays → Ultraviolet → Visible light → X-rays"],
+    correct:[0]
+  },
+  {
+    id:11, domain:"Waves", standard:"S8P4b", dok:2, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>Use the data in the table below to answer the question.<br><br><table class='data-table'><tr><th>Wave Type</th><th>Relative Frequency</th><th>Relative Wavelength</th></tr><tr><td>Radio waves</td><td>Lowest</td><td>Longest</td></tr><tr><td>Microwaves</td><td>Low</td><td>Long</td></tr><tr><td>X-rays</td><td>High</td><td>Short</td></tr><tr><td>Gamma rays</td><td>Highest</td><td>Shortest</td></tr></table>Which conclusions are supported by the data? Select ALL that apply.",
+    options:["A. Frequency and wavelength are inversely related — as one increases, the other decreases",
+             "B. Higher-frequency waves carry more energy than lower-frequency waves",
+             "C. Radio waves have more energy than gamma rays because they have a longer wavelength",
+             "D. Gamma rays have the highest energy of the waves listed"],
+    correct:[0,1,3]
+  },
+  {
+    id:12, domain:"Waves", standard:"S8P4c", dok:2, type:"dnd",
+    stem:"Drag each device to the region of the electromagnetic spectrum it uses most directly.",
+    items:["MRI machine", "TV remote control", "Microwave oven", "Dental X-ray"],
+    targets:["Radio/Microwave Waves","Infrared Waves","Microwave Waves","X-rays"],
+    correctMap:{"MRI machine":"Radio/Microwave Waves","TV remote control":"Infrared Waves","Microwave oven":"Microwave Waves","Dental X-ray":"X-rays"}
+  },
+  {
+    id:13, domain:"Waves", standard:"S8P4d", dok:2, type:"sr",
+    stem:"A light ray travels from air into a glass block at an angle. What happens to the light as it enters the glass?",
+    options:["A. The light is absorbed and converted to heat energy",
+             "B. The light bends because it changes speed as it moves from one medium to another",
+             "C. The light bounces back into the air because glass is opaque",
+             "D. The light speeds up and its wavelength increases"],
+    correct:[1]
+  },
+  {
+    id:14, domain:"Waves", standard:"S8P4e", dok:3, type:"sr",
+    stem:"The table below shows the speed of a sound wave in different materials:<br><br><table class='data-table'><tr><th>Material</th><th>Wave Speed (m/s)</th></tr><tr><td>Air (gas)</td><td>343</td></tr><tr><td>Water (liquid)</td><td>1,480</td></tr><tr><td>Steel (solid)</td><td>5,960</td></tr></table>A student claims that the speed of a wave increases as the density of the medium increases. Do the data support this claim? Explain your reasoning by selecting the BEST answer.",
+    options:["A. Yes — the data show that the wave travels fastest in steel, which is the densest material listed",
+             "B. No — wave speed is unrelated to the density of the medium",
+             "C. Yes — but only for liquids and solids, not gases",
+             "D. No — density decreases wave speed; the data show the opposite pattern"],
+    correct:[0]
+  },
+  {
+    id:15, domain:"Waves", standard:"S8P4f,S8P4g", dok:3, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>A student shines a beam of light through a convex (converging) lens. Which statements are correct about what happens? Select ALL that apply.",
+    options:["A. The light rays bend toward each other and converge at a focal point",
+             "B. A converging lens can be used in a magnifying glass to form an enlarged image",
+             "C. The light is absorbed by the lens and no image forms",
+             "D. A camera uses a converging lens to form a real image on a sensor"],
+    correct:[0,1,3]
+  },
+
+  // ─── ENERGY (Q16–Q20) ─────────────────────────────────────────────
+  {
+    id:16, domain:"Energy", standard:"S8P2a", dok:2, type:"sr",
+    stem:"A 5 kg ball rolls along a flat surface at 4 m/s. An identical 5 kg ball rolls at 8 m/s. How does the kinetic energy of the faster ball compare to the slower ball?",
+    options:["A. The faster ball has the same kinetic energy because both balls have the same mass",
+             "B. The faster ball has more kinetic energy because kinetic energy increases with speed",
+             "C. The faster ball has less kinetic energy because it covers more distance",
+             "D. The kinetic energy cannot be compared without knowing each ball's height"],
+    correct:[1]
+  },
+  {
+    id:17, domain:"Energy", standard:"S8P2a,S8P2b", dok:2, type:"dnd",
+    stem:"A pendulum swings from position A (highest point on the left) through position B (lowest point, center) to position C (highest point on the right). Drag each energy label to the correct position.",
+    items:["Maximum kinetic energy", "Maximum potential energy", "Equal KE and PE"],
+    targets:["Position A (highest, left)","Position B (lowest, center)","Position C (highest, right)"],
+    correctMap:{"Maximum kinetic energy":"Position B (lowest, center)","Maximum potential energy":"Position A (highest, left)","Equal KE and PE":"Position C (highest, right)"}
+  },
+  {
+    id:18, domain:"Energy", standard:"S8P2c", dok:2, type:"sr",
+    stem:"A metal pot sits on a gas stove. Heat transfers from the burner through the metal pot to the food inside. Which method of heat transfer is occurring through the metal pot itself?",
+    options:["A. Convection, because the particles in the metal flow and carry heat",
+             "B. Radiation, because the heat travels through empty space inside the metal",
+             "C. Conduction, because heat is transferred through the direct collision of particles in the solid metal",
+             "D. Evaporation, because water molecules carry heat away from the metal"],
+    correct:[2]
+  },
+  {
+    id:19, domain:"Energy", standard:"S8P2c", dok:2, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>A student places a thermometer in a pot of water on a stove and observes the water heating up. Which statements correctly describe heat transfer in this scenario? Select ALL that apply.",
+    options:["A. Conduction transfers heat from the burner through the metal pot",
+             "B. Convection currents move heated water upward and cooler water downward in the pot",
+             "C. Radiation transfers heat from the stove's electric coil through empty space to the pot's surface",
+             "D. All heat transfer in the scenario occurs through convection only"],
+    correct:[0,1,2]
+  },
+  {
+    id:20, domain:"Energy", standard:"S8P2b,S8P2d", dok:3, type:"sr",
+    stem:"A student releases a roller coaster car from the top of a 40 m hill. At the bottom of the hill, she measures the car's speed. She then argues that the car at the bottom has more total mechanical energy than at the top because it is moving faster. Is her argument correct?",
+    options:["A. Yes — kinetic energy at the bottom is greater than potential energy at the top",
+             "B. No — the total mechanical energy is approximately the same at both points; potential energy transformed into kinetic energy",
+             "C. Yes — the car gains energy from gravity as it falls",
+             "D. No — the car at the bottom has no energy because all potential energy was destroyed"],
+    correct:[1]
+  },
+
+  // ─── MOTION (Q21–Q25) ─────────────────────────────────────────────
+  {
+    id:21, domain:"Motion", standard:"S8P3a", dok:1, type:"sr",
+    stem:"A student records the following data for a moving bicycle:<br><br><table class='data-table'><tr><th>Time (s)</th><th>Distance (m)</th></tr><tr><td>0</td><td>0</td></tr><tr><td>2</td><td>10</td></tr><tr><td>4</td><td>20</td></tr><tr><td>6</td><td>30</td></tr></table>What is the average speed of the bicycle?",
+    options:["A. 2 m/s", "B. 5 m/s", "C. 10 m/s", "D. 30 m/s"],
+    correct:[1]
+  },
+  {
+    id:22, domain:"Motion", standard:"S8P3a", dok:2, type:"sr",
+    stem:"A distance-time graph shows a straight horizontal line for a moving object. What does this indicate about the object's motion?",
+    options:["A. The object is moving at a constant speed",
+             "B. The object is accelerating",
+             "C. The object is at rest — not moving",
+             "D. The object's speed is decreasing"],
+    correct:[2]
+  },
+  {
+    id:23, domain:"Motion", standard:"S8P3b", dok:2, type:"sr",
+    stem:"A 10 kg shopping cart is at rest in a parking lot. A customer pushes the cart with a 30 N force to the right, and friction acts on the cart with a 10 N force to the left. What is the net force on the cart, and what will happen to the cart?",
+    options:["A. Net force = 0 N; the cart stays at rest",
+             "B. Net force = 20 N to the right; the cart accelerates to the right",
+             "C. Net force = 40 N to the right; the cart moves to the right at constant speed",
+             "D. Net force = 10 N to the left; the cart moves to the left"],
+    correct:[1]
+  },
+  {
+    id:24, domain:"Motion", standard:"S8P3b", dok:2, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>A hockey puck sliding across frictionless ice continues moving in a straight line at the same speed even though no one is pushing it. Which of Newton's Laws explains this behavior? Select ALL statements that CORRECTLY describe this situation.",
+    options:["A. The puck demonstrates Newton's 1st Law — an object in motion remains in motion unless acted on by an unbalanced force",
+             "B. The net force on the puck is zero because there is no friction or air resistance to slow it down",
+             "C. The puck demonstrates Newton's 3rd Law — the ice pushes back on the puck with equal force",
+             "D. The puck will continue at constant velocity because no unbalanced force acts on it"],
+    correct:[0,1,3]
+  },
+  {
+    id:25, domain:"Motion", standard:"S8P3c", dok:3, type:"sr",
+    stem:"Two students push identical boxes across a floor. Student A pushes a 10 kg box and Student B pushes a 30 kg box, each applying the same force. Which conclusion is supported by Newton's 2nd Law?",
+    options:["A. Both boxes accelerate at the same rate because the same force was applied",
+             "B. Student A's box accelerates more because the same force on a smaller mass produces greater acceleration",
+             "C. Student B's box accelerates more because larger objects naturally move faster",
+             "D. Neither box accelerates because the friction force balances the applied force"],
+    correct:[1]
+  },
+
+  // ─── FORCE (Q26–Q30) ──────────────────────────────────────────────
+  {
+    id:26, domain:"Force", standard:"S8P5a", dok:2, type:"sr",
+    stem:"Two magnets are placed near each other but not touching. One magnet exerts a repulsive force on the other. Which statement BEST explains how this force is possible without contact?",
+    options:["A. The magnets transfer electrons to each other through the air",
+             "B. Each magnet creates a magnetic field that extends into the space around it, allowing force to act at a distance",
+             "C. The force only acts when the magnets are close enough to physically touch",
+             "D. The force is caused by static electricity, not magnetism"],
+    correct:[1]
+  },
+  {
+    id:27, domain:"Force", standard:"S8P5a", dok:2, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>Which of the following are examples of force fields acting between objects that are NOT in direct contact? Select ALL that apply.",
+    options:["A. Earth's gravity pulling the Moon toward Earth",
+             "B. A friction force between a sliding book and a table surface",
+             "C. A magnet attracting iron filings without touching them",
+             "D. An electric force between two charged balloons held near each other"],
+    correct:[0,2,3]
+  },
+  {
+    id:28, domain:"Force", standard:"S8P5b", dok:2, type:"sr",
+    stem:"A student brings a negatively charged rubber rod near (but not touching) a neutral metallic sphere on an insulating stand. The student observes that the side of the sphere near the rod develops a positive charge. Which process explains this?",
+    options:["A. Charging by friction — the rod rubs electrons from the sphere",
+             "B. Charging by conduction — electrons flow from the rod directly into the sphere",
+             "C. Charging by induction — the rod's charge causes electrons in the sphere to redistribute without contact",
+             "D. The sphere generates its own positive charge in response to the rod"],
+    correct:[2]
+  },
+  {
+    id:29, domain:"Force", standard:"S8P5b", dok:2, type:"dnd",
+    stem:"Drag each material to the correct category based on how electric charge distributes within it.",
+    items:["Copper wire", "Rubber gloves", "Silver rod", "Plastic ruler"],
+    targets:["Conductor (charge moves freely)","Insulator (charge stays in place)"],
+    correctMap:{"Copper wire":"Conductor (charge moves freely)","Rubber gloves":"Insulator (charge stays in place)","Silver rod":"Conductor (charge moves freely)","Plastic ruler":"Insulator (charge stays in place)"}
+  },
+  {
+    id:30, domain:"Force", standard:"S8P5c", dok:3, type:"ms",
+    stem:"<strong>Select ALL correct answers.</strong><br><br>A student builds an electromagnet by wrapping copper wire around an iron nail and connecting it to a battery. She tests the magnetic strength by counting how many small paper clips it can pick up. She wants to investigate the factors that affect the strength of the electromagnet.<br><br>Which of the following changes would MOST LIKELY increase the electromagnet's strength? Select ALL that apply.",
+    options:["A. Increasing the number of wire turns (coils) around the nail",
+             "B. Using a larger iron core (bigger nail)",
+             "C. Adding more batteries to increase the electrical energy",
+             "D. Using a shorter piece of wire for the coils"],
+    correct:[0,1,2]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════ STATE
+let state = {
+  studentName: '', studentPeriod: '',
+  currentQ: 0, answers: {}, flags: new Set(),
+  startTime: null, timerInterval: null, timeUsed: 0,
+  submitted: false
+};
+
+// Domain colors helper
+function domainColor(d) {
+  const m = { Matter: '#1B4F72', Waves: '#145A32', Energy: '#7D6608', Motion: '#6E2F8A', Force: '#922B21' };
+  return m[d] || '#333';
+}
+function domainLight(d) {
+  const m = { Matter: '#D6EAF8', Waves: '#D5F5E3', Energy: '#FEF9E7', Motion: '#F4ECF7', Force: '#FDEDEC' };
+  return m[d] || '#eee';
+}
+
+// ═══════════════════════════════════════════════════════════ START
+function startTest() {
+  const name = document.getElementById('studentName').value.trim();
+  const period = document.getElementById('studentPeriod').value.trim();
+  if (!name || !period) { alert('Please enter your name and class period to begin.'); return; }
+  state.studentName = name;
+  state.studentPeriod = period;
+  state.startTime = Date.now();
+  document.getElementById('headerName').textContent = name;
+  document.getElementById('headerPeriod').textContent = period;
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('test-screen').style.display = 'block';
+  buildPalette();
+  renderQuestion(0);
+  startTimer(50 * 60);
+}
+
+// ═══════════════════════════════════════════════════════════ TIMER
+function startTimer(seconds) {
+  let remaining = seconds;
+  updateTimerDisplay(remaining);
+  state.timerInterval = setInterval(() => {
+    remaining--;
+    state.timeUsed++;
+    updateTimerDisplay(remaining);
+    if (remaining <= 300) document.getElementById('timer').classList.add('warning');
+    if (remaining <= 0) { clearInterval(state.timerInterval); submitTest(); }
+  }, 1000);
+}
+
+function updateTimerDisplay(seconds) {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  document.getElementById('timer').textContent = m + ':' + s;
+}
+
+// ═══════════════════════════════════════════════════════════ PALETTE
+function buildPalette() {
+  const grid = document.getElementById('paletteGrid');
+  grid.innerHTML = '';
+  questions.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'q-btn unanswered';
+    btn.id = 'pal-' + i;
+    btn.textContent = i + 1;
+    btn.onclick = () => renderQuestion(i);
+    grid.appendChild(btn);
+  });
+}
+
+function updatePalette() {
+  questions.forEach((q, i) => {
+    const btn = document.getElementById('pal-' + i);
+    if (!btn) return;
+    btn.className = 'q-btn';
+    if (state.flags.has(i)) btn.className += ' flagged';
+    else if (isAnswered(i)) btn.className += ' answered';
+    else btn.className += ' unanswered';
+    if (i === state.currentQ) btn.className += ' current';
+  });
+}
+
+function isAnswered(i) {
+  const ans = state.answers[i];
+  if (!ans) return false;
+  const q = questions[i];
+  if (q.type === 'dnd') return ans && Object.keys(ans).length === q.items.length;
+  return ans && ans.length > 0;
+}
+
+// ═══════════════════════════════════════════════════════════ RENDER QUESTION
+function renderQuestion(idx) {
+  state.currentQ = idx;
+  document.getElementById('currentQNum').textContent = idx + 1;
+  const q = questions[idx];
+  const area = document.getElementById('questionArea');
+  updatePalette();
+
+  let bodyHTML = '';
+  if (q.type === 'sr') {
+    const savedSR = state.answers[idx] || [];
+    bodyHTML = `<div class="options">` +
+      q.options.map((opt, oi) => `
+        <label class="option${savedSR.includes(oi) ? ' selected' : ''}">
+          <input type="radio" name="q${idx}" value="${oi}" ${savedSR.includes(oi) ? 'checked' : ''}
+            onchange="saveAnswer(${idx},[parseInt(this.value)])">
+          <span class="option-text">${opt}</span>
+        </label>`).join('') +
+      `</div>`;
+  } else if (q.type === 'ms') {
+    const savedMS = state.answers[idx] || [];
+    bodyHTML = `<div class="options">` +
+      q.options.map((opt, oi) => `
+        <label class="option${savedMS.includes(oi) ? ' selected' : ''}">
+          <input type="checkbox" name="q${idx}" value="${oi}" ${savedMS.includes(oi) ? 'checked' : ''}
+            onchange="toggleMS(${idx},${oi},this.checked)">
+          <span class="option-text">${opt}</span>
+        </label>`).join('') +
+      `</div>`;
+  } else if (q.type === 'dnd') {
+    bodyHTML = buildDND(idx, q);
+  }
+
+  const flagged = state.flags.has(idx);
+  const typeLabels = { sr: 'Selected Response — Choose ONE answer', ms: 'Multi-Select — Select ALL correct answers', dnd: 'Drag-and-Drop — Drag each item to the correct category' };
+
+  area.innerHTML = `
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-number">Question ${idx + 1}</span>
+        <div class="q-badges">
+          <span class="badge badge-domain" style="background:${domainColor(q.domain)}">${q.domain}</span>
+          <span class="badge badge-dok">DOK ${q.dok}</span>
+          <span class="badge" style="background:#eee;color:#555;font-size:.68rem;">${q.standard}</span>
+        </div>
+      </div>
+      <div class="q-type-label">${typeLabels[q.type]}</div>
+      <div class="q-stem">${q.stem}</div>
+      ${bodyHTML}
+      <div class="q-actions">
+        <button class="btn-flag${flagged ? ' flagged' : ''}" onclick="toggleFlag(${idx})">
+          <span class="flag-icon">🚩</span> ${flagged ? 'Flagged' : 'Flag Vocabulary'}
+        </button>
+        <div class="btn-nav">
+          ${idx > 0 ? `<button class="btn btn-secondary" onclick="renderQuestion(${idx-1})">&#8592; Back</button>` : ''}
+          ${idx < questions.length - 1
+            ? `<button class="btn btn-primary" onclick="renderQuestion(${idx+1})">Next &#8594;</button>`
+            : `<button class="btn btn-submit" onclick="confirmSubmit()">Submit Test &#10003;</button>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════ DND BUILD
+function buildDND(idx, q) {
+  const saved = state.answers[idx] || {};
+  const placedItems = Object.keys(saved);
+  const unplacedItems = q.items.filter(it => !placedItems.includes(it));
+
+  let targetHTML = q.targets.map(tgt => {
+    const itemsInTarget = Object.entries(saved).filter(([k,v]) => v === tgt).map(([k]) => k);
+    const itemsHTML = itemsInTarget.map(it =>
+      `<div class="drag-item" draggable="true" data-item="${escHTML(it)}" data-qidx="${idx}"
+         ondragstart="onDragStart(event)">${escHTML(it)}
+         <span class="drag-restore" onclick="restoreItem(${idx},'${escHTML(it)}')">&#x21A9;</span>
+       </div>`).join('');
+    return `<div class="dnd-target">
+      <h4>${escHTML(tgt)}</h4>
+      <div class="drop-zone" data-target="${escHTML(tgt)}" data-qidx="${idx}"
+           ondragover="onDragOver(event)" ondrop="onDrop(event,${idx},'${escHTML(tgt)}')"
+           ondragleave="onDragLeave(event)">
+        ${itemsHTML || '<span class="drop-zone-label">Drop items here</span>'}
+      </div>
+    </div>`;
+  }).join('');
+
+  const sourceHTML = `<div class="dnd-source">
+    <h4>Items to Sort</h4>
+    <div class="drag-items" id="source-${idx}">
+      ${unplacedItems.map(it =>
+        `<div class="drag-item" draggable="true" data-item="${escHTML(it)}" data-qidx="${idx}"
+           ondragstart="onDragStart(event)">${escHTML(it)}</div>`).join('')}
+      ${unplacedItems.length === 0 ? '<span style="color:#999;font-size:.8rem;font-style:italic;">All items placed</span>' : ''}
+    </div>
+  </div>`;
+
+  return `<div class="dnd-container">${sourceHTML}${targetHTML}</div>`;
+}
+
+function escHTML(s) { return s.replace(/'/g,"&#x27;").replace(/"/g,'&quot;'); }
+
+let dragItem = null;
+function onDragStart(e) {
+  dragItem = e.target.dataset.item;
+  e.target.classList.add('dragging');
+  setTimeout(() => e.target.classList.remove('dragging'), 0);
+}
+function onDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e, qidx, target) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!dragItem) return;
+  const ans = state.answers[qidx] || {};
+  ans[dragItem] = target;
+  state.answers[qidx] = ans;
+  renderQuestion(qidx);
+  updatePalette();
+}
+function restoreItem(qidx, item) {
+  const ans = state.answers[qidx] || {};
+  delete ans[item];
+  state.answers[qidx] = ans;
+  renderQuestion(qidx);
+  updatePalette();
+}
+
+// ═══════════════════════════════════════════════════════════ SAVE ANSWERS
+function saveAnswer(idx, val) {
+  state.answers[idx] = val;
+  // Update option highlight for SR
+  document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+  const checked = document.querySelector(`input[name="q${idx}"]:checked`);
+  if (checked) checked.closest('.option').classList.add('selected');
+  updatePalette();
+}
+
+function toggleMS(idx, oi, checked) {
+  const ans = state.answers[idx] || [];
+  if (checked) { if (!ans.includes(oi)) ans.push(oi); }
+  else { const pos = ans.indexOf(oi); if (pos > -1) ans.splice(pos, 1); }
+  state.answers[idx] = ans;
+  document.querySelectorAll(`input[name="q${idx}"]`).forEach(cb => {
+    cb.closest('.option').classList.toggle('selected', cb.checked);
+  });
+  updatePalette();
+}
+
+function toggleFlag(idx) {
+  if (state.flags.has(idx)) state.flags.delete(idx);
+  else state.flags.add(idx);
+  renderQuestion(idx);
+  updatePalette();
+}
+
+// ═══════════════════════════════════════════════════════════ SUBMIT
+function confirmSubmit() {
+  const unanswered = questions.filter((q,i) => !isAnswered(i)).length;
+  if (unanswered > 0) {
+    if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  submitTest();
+}
+
+function submitTest() {
+  if (state.submitted) return;
+  state.submitted = true;
+  clearInterval(state.timerInterval);
+  state.timeUsed = Math.round((Date.now() - state.startTime) / 1000);
+  showResults();
+}
+
+// ═══════════════════════════════════════════════════════════ SCORING
+function scoreTest() {
+  let total = 0;
+  const domainResults = {};
+  questions.forEach((q, i) => {
+    if (!domainResults[q.domain]) domainResults[q.domain] = { correct: 0, total: 0 };
+    domainResults[q.domain].total++;
+    const ans = state.answers[i] || [];
+    let correct = false;
+    if (q.type === 'sr' || q.type === 'ms') {
+      const sortedAns = [...ans].sort().join(',');
+      const sortedCorrect = [...q.correct].sort().join(',');
+      correct = sortedAns === sortedCorrect;
+    } else if (q.type === 'dnd') {
+      const placed = state.answers[i] || {};
+      correct = q.items.every(it => placed[it] === q.correctMap[it]);
+    }
+    if (correct) { total++; domainResults[q.domain].correct++; }
+  });
+  return { total, domainResults };
+}
+
+function getAchievementLevel(pct) {
+  if (pct >= ALD.distinguished) return { label: 'Distinguished Learner', cls: 'badge-distinguished' };
+  if (pct >= ALD.proficient)    return { label: 'Proficient Learner',    cls: 'badge-proficient' };
+  if (pct >= ALD.developing)    return { label: 'Developing Learner',    cls: 'badge-developing' };
+  return { label: 'Beginning Learner', cls: 'badge-beginning' };
+}
+
+// ═══════════════════════════════════════════════════════════ SHOW RESULTS
+function showResults() {
+  document.getElementById('test-screen').style.display = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  window.scrollTo(0,0);
+
+  const { total, domainResults } = scoreTest();
+  const pct = Math.round((total / questions.length) * 100);
+  const ald = getAchievementLevel(pct);
+
+  document.getElementById('resultsStudentName').textContent = state.studentName + ' — ' + state.studentPeriod;
+  const badge = document.getElementById('achievementBadge');
+  badge.textContent = ald.label;
+  badge.className = 'achievement-badge ' + ald.cls;
+
+  // Score summary
+  const mins = Math.floor(state.timeUsed / 60);
+  const secs = state.timeUsed % 60;
+  document.getElementById('scoreSummary').innerHTML = `
+    <div class="score-box"><div class="score-num">${total}</div><div class="score-label">Correct</div></div>
+    <div class="score-box"><div class="score-num">${questions.length - total}</div><div class="score-label">Incorrect</div></div>
+    <div class="score-box"><div class="score-num">${pct}%</div><div class="score-label">Score</div></div>
+    <div class="score-box"><div class="score-num">${mins}:${secs.toString().padStart(2,'0')}</div><div class="score-label">Time Used</div></div>`;
+
+  // Domain bars
+  const domainOrder = ['Matter','Waves','Energy','Motion','Force'];
+  const domainBreakdown = [];
+  document.getElementById('domainBars').innerHTML = domainOrder.map(d => {
+    const dr = domainResults[d] || { correct: 0, total: 0 };
+    const dpct = dr.total > 0 ? Math.round((dr.correct / dr.total) * 100) : 0;
+    domainBreakdown.push({ domain: d, correct: dr.correct, total: dr.total, percent: dpct });
+    return `<div class="domain-row">
+      <div class="domain-label">
+        <span style="color:${domainColor(d)};font-weight:700;">${d}</span>
+        <span>${dr.correct}/${dr.total} (${dpct}%)</span>
+      </div>
+      <div class="domain-bar-bg">
+        <div class="domain-bar-fill" style="width:0%;background:${domainColor(d)}" data-pct="${dpct}"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.domain-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 100);
+
+  // Answer review
+  const itemResults = questions.map((q, i) => {
+    const ans = state.answers[i] || [];
+    let correct = false;
+    if (q.type === 'sr' || q.type === 'ms') {
+      correct = [...ans].sort().join(',') === [...q.correct].sort().join(',');
+    } else {
+      const placed = state.answers[i] || {};
+      correct = q.items.every(it => placed[it] === q.correctMap[it]);
+    }
+    return correct;
+  });
+
+  document.getElementById('answerGrid').innerHTML = itemResults.map((correct, i) =>
+    `<div class="answer-item ${correct ? 'correct' : 'incorrect'}${state.flags.has(i) ? ' flagged-vocab' : ''}" title="Q${i+1}: ${questions[i].domain}">
+      ${i + 1}
+    </div>`).join('');
+
+  // Vocab flags
+  const flagSection = document.getElementById('flagList');
+  if (state.flags.size === 0) {
+    flagSection.innerHTML = '<span class="no-flags">No vocabulary items were flagged.</span>';
+  } else {
+    flagSection.innerHTML = [...state.flags].sort((a,b)=>a-b).map(i =>
+      `<div class="flag-tag">Q${i+1} — ${questions[i].domain} (${questions[i].standard})</div>`).join('');
+  }
+
+  // Submit to Apps Script
+  submitToSheets(total, pct, ald.label, domainBreakdown);
+}
+
+// ═══════════════════════════════════════════════════════════ SUBMIT TO SHEETS
+function submitToSheets(totalScore, percentCorrect, achievementLevel, domainBreakdown) {
+  const payload = {
+    studentName: state.studentName,
+    studentPeriod: state.studentPeriod,
+    totalScore: totalScore,
+    totalQuestions: questions.length,
+    percentCorrect: percentCorrect,
+    achievementLevel: achievementLevel,
+    domainBreakdown: domainBreakdown,
+    vocabFlags: [...state.flags].sort((a,b)=>a-b).map(i => i + 1),
+    timestamp: new Date().toISOString(),
+    timeUsed: state.timeUsed
+  };
+
+  const statusEl = document.getElementById('submitStatus');
+  statusEl.className = 'submit-status sending';
+  statusEl.textContent = 'Submitting your results to the teacher gradebook...';
+
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(() => {
+    statusEl.className = 'submit-status success';
+    statusEl.textContent = '✓ Results submitted successfully to your teacher\'s Google Sheet.';
+  }).catch(err => {
+    statusEl.className = 'submit-status error';
+    statusEl.textContent = '⚠ Submission failed. Please show this screen to your teacher. Score: ' + totalScore + '/' + questions.length + ' (' + percentCorrect + '%)';
+    console.error('Submission error:', err);
+  });
+}
+</script>
+</body>
+</html>
