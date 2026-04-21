@@ -411,27 +411,45 @@ const questions = [
     correct:[1]
   },
    {
-  id:17, domain:"Energy", standard:"S8P2a,S8P2b", dok:2, type:"dnd",
-  stem:"A pendulum swings through four positions: A (highest left), B (between A and the center), C (lowest point), and D (highest right). Drag each description to the correct position.",
-  items:[
-    "Maximum potential energy",
-    "Equal kinetic and potential energy",
-    "Maximum kinetic energy",
-    "Maximum potential energy on the opposite side"
+  id: 17,
+  domain: 'Energy',
+  std: 'S8P2a,S8P2b',
+  dok: 2,
+  type: 'dragdrop',
+  stem: 'A pendulum swings through three positions: A, B, and C. Drag each energy description to the correct position.',
+  prompt: 'Drag each item to the correct category.',
+  categories: [
+    {
+      id: 'A',
+      label: 'Position A: Highest Point'
+    },
+    {
+      id: 'B',
+      label: 'Position B: During the swing, between Points A and C'
+    },
+    {
+      id: 'C',
+      label: 'Position C: Lowest Point'
+    }
   ],
-  targets:[
-    "Position A (highest left)",
-    "Position B (between A and center)",
-    "Position C (lowest point)",
-    "Position D (highest right)"
-  ],
-  correctMap:{
-    "Maximum potential energy":"Position A (highest left)",
-    "Equal kinetic and potential energy":"Position B (between A and center)",
-    "Maximum kinetic energy":"Position C (lowest point)",
-    "Maximum potential energy on the opposite side":"Position D (highest right)"
-  }
-},
+  items: [
+    {
+      id: 'item1',
+      text: 'Highest potential energy',
+      correctCategory: 'A'
+    },
+    {
+      id: 'item2',
+      text: 'Potential energy decreasing and kinetic energy increasing',
+      correctCategory: 'B'
+    },
+    {
+      id: 'item3',
+      text: 'Highest kinetic energy',
+      correctCategory: 'C'
+    }
+  ]
+}
   
   {
     id:18, domain:"Energy", standard:"S8P2c", dok:2, type:"sr",
