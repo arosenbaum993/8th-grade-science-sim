@@ -410,13 +410,29 @@ const questions = [
              "D. The kinetic energy cannot be compared without knowing each ball's height"],
     correct:[1]
   },
-  {
-    id:17, domain:"Energy", standard:"S8P2a,S8P2b", dok:2, type:"dnd",
-    stem:"A pendulum swings from position A (highest point on the left) through position B (lowest point, center) to position C (highest point on the right). Drag each energy label to the correct position.",
-    items:["Maximum kinetic energy", "Maximum potential energy", "Equal KE and PE"],
-    targets:["Position A (highest, left)","Position B (lowest, center)","Position C (highest, right)"],
-    correctMap:{"Maximum kinetic energy":"Position B (lowest, center)","Maximum potential energy":"Position A (highest, left)","Equal KE and PE":"Position C (highest, right)"}
-  },
+   {
+  id:17, domain:"Energy", standard:"S8P2a,S8P2b", dok:2, type:"dnd",
+  stem:"A pendulum swings through four positions: A (highest left), B (between A and the center), C (lowest point), and D (highest right). Drag each description to the correct position.",
+  items:[
+    "Maximum potential energy",
+    "Equal kinetic and potential energy",
+    "Maximum kinetic energy",
+    "Maximum potential energy on the opposite side"
+  ],
+  targets:[
+    "Position A (highest left)",
+    "Position B (between A and center)",
+    "Position C (lowest point)",
+    "Position D (highest right)"
+  ],
+  correctMap:{
+    "Maximum potential energy":"Position A (highest left)",
+    "Equal kinetic and potential energy":"Position B (between A and center)",
+    "Maximum kinetic energy":"Position C (lowest point)",
+    "Maximum potential energy on the opposite side":"Position D (highest right)"
+  }
+},
+  
   {
     id:18, domain:"Energy", standard:"S8P2c", dok:2, type:"sr",
     stem:"A metal pot sits on a gas stove. Heat transfers from the burner through the metal pot to the food inside. Which method of heat transfer is occurring through the metal pot itself?",
