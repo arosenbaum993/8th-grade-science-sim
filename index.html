@@ -410,46 +410,25 @@ const questions = [
              "D. The kinetic energy cannot be compared without knowing each ball's height"],
     correct:[1]
   },
-   {
-  id: 17,
-  domain: 'Energy',
-  std: 'S8P2a,S8P2b',
-  dok: 2,
-  type: 'dragdrop',
-  stem: 'A pendulum swings through three positions: A, B, and C. Drag each energy description to the correct position.',
-  prompt: 'Drag each item to the correct category.',
-  categories: [
-    {
-      id: 'A',
-      label: 'Position A: Highest Point'
-    },
-    {
-      id: 'B',
-      label: 'Position B: During the swing, between Points A and C'
-    },
-    {
-      id: 'C',
-      label: 'Position C: Lowest Point'
-    }
+  {
+  id:17, domain:"Energy", standard:"S8P2a,S8P2b", dok:2, type:"dnd",
+  stem:"A pendulum swings through three positions: A, B, and C. Drag each energy description to the correct position.",
+  items:[
+    "Highest potential energy",
+    "Potential energy decreasing and kinetic energy increasing",
+    "Highest kinetic energy"
   ],
-  items: [
-    {
-      id: 'item1',
-      text: 'Highest potential energy',
-      correctCategory: 'A'
-    },
-    {
-      id: 'item2',
-      text: 'Potential energy decreasing and kinetic energy increasing',
-      correctCategory: 'B'
-    },
-    {
-      id: 'item3',
-      text: 'Highest kinetic energy',
-      correctCategory: 'C'
-    }
-  ]
-}
+  targets:[
+    "Position A: Highest Point",
+    "Position B: During the swing, between Points A and C",
+    "Position C: Lowest Point"
+  ],
+  correctMap:{
+    "Highest potential energy":"Position A: Highest Point",
+    "Potential energy decreasing and kinetic energy increasing":"Position B: During the swing, between Points A and C",
+    "Highest kinetic energy":"Position C: Lowest Point"
+  }
+},
   
   {
     id:18, domain:"Energy", standard:"S8P2c", dok:2, type:"sr",
